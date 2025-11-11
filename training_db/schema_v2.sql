@@ -58,12 +58,17 @@ CREATE TABLE IF NOT EXISTS training_runs (
   final_learning_rate REAL,
   total_training_steps INTEGER,
 
-  -- ========== Flexible Storage (JSON - ALL ~200 attributes) ==========
+  -- ========== Flexible Storage (JSON - ALL ~300-400 attributes) ==========
   -- Full config from YAML (50-100 attributes)
   config_json TEXT,  -- Stores entire config dict as JSON
 
   -- Full W&B summary (100-150 attributes)
   final_metrics_json TEXT,  -- Stores wandb.run.summary._json_dict
+
+  -- Full W&B history (100-150 keys × N steps)
+  -- Time series of all metrics during training
+  -- Example: {'train/loss': [0.5, 0.4, 0.3, ...], 'grad_norm': [1.2, 1.1, ...]}
+  history_json TEXT,
 
   -- ========== Attachments (S3 keys) ==========
   conversation_s3_key TEXT,  -- Conversation export for this run
