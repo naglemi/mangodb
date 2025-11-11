@@ -28,11 +28,24 @@ Training completes → update_run_status('completed') [❌ NEVER REACHED]
 Crash detected → attach_crash_data() [❌ NEVER CALLED]
 ```
 
-## Solution: Add Termination Handler
+## Solution: Update Database ON THE CRASHING MACHINE ✅
 
-We need a handler that triggers when EC2 instances terminate and updates the database.
+**PRIMARY SOLUTION (IMPLEMENTED)**: Update database status IMMEDIATELY when crash is detected, BEFORE doing anything else.
 
-**IMPORTANT**: We already upload error logs to S3 (not CloudWatch) in crash_notifications.py.
+**Code Location**: `finetune_safe/crash_notifications.py:341-357`
+- Called by: `main.py` global exception handler (line 196)
+- Runs: ON THE EC2 INSTANCE when crash occurs
+- Updates: Database status to "crashed" as FIRST step
+
+This ensures database is updated even if:
+- Notifications fail
+- Email fails
+- Bedrock analysis fails
+- Instance terminates before completion
+
+**BACKUP SOLUTION**: Periodic cleanup script (Option 3 below) catches any crashes that occur BEFORE the exception handler is installed.
+
+**IMPORTANT**: We upload error logs to S3 (not CloudWatch) in crash_notifications.py.
 Logs are stored at: `s3://training-context/crash-reports/{run_id}/error.log`
 
 ### Option 1: CloudWatch Events + Lambda (RECOMMENDED)

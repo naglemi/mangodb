@@ -35,11 +35,16 @@ All three integration points updated to use mangodb:
 - Sets TRAINING_DB_PATH environment variable
 - Fixes "No module named 'training_db'" error
 
-### 6. Termination Handler ✅
-- Created `scripts/cleanup_orphaned_runs.py` (Option 3 from TERMINATION_HANDLER_NEEDED.md)
+### 6. Termination Handler ✅✅
+**PRIMARY**: Database update at crash time (ON THE MACHINE)
+- Updated `crash_notifications.py` to update database status FIRST (line 341-357)
+- Runs when crash is detected, BEFORE notifications
+- Ensures database updated even if notifications fail
+
+**BACKUP**: Periodic cleanup script for early crashes
+- Created `scripts/cleanup_orphaned_runs.py`
 - Checks EC2 instance states every 5 minutes via cron
-- Updates database for runs whose instances are terminated
-- Handles cases where training crashes before W&B initializes
+- Catches crashes that occur BEFORE exception handler is installed
 
 ### 7. Test Runs Recovered ✅
 Manually updated three crashed runs with correct data:
