@@ -30,7 +30,10 @@ Crash detected → attach_crash_data() [❌ NEVER CALLED]
 
 ## Solution: Add Termination Handler
 
-We need a CloudWatch Events rule that triggers when EC2 instances terminate and updates the database.
+We need a handler that triggers when EC2 instances terminate and updates the database.
+
+**IMPORTANT**: We already upload error logs to S3 (not CloudWatch) in crash_notifications.py.
+Logs are stored at: `s3://training-context/crash-reports/{run_id}/error.log`
 
 ### Option 1: CloudWatch Events + Lambda (RECOMMENDED)
 
