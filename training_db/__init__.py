@@ -49,6 +49,12 @@ from .objectives import (
     delete_run_objectives,
 )
 
+from .wandb_sync import (
+    get_objectives_display_data,
+    sync_run_complete,
+    parse_config_objectives,
+)
+
 __all__ = [
     # Core functions
     'init_db',
@@ -68,4 +74,8 @@ __all__ = [
     'get_objective_statistics',
     'compare_gradient_methods',
     'delete_run_objectives',
+    # W&B sync functions
+    'get_objectives_display_data',
+    'sync_run_complete',
+    'parse_config_objectives',
 ]
