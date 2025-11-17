@@ -73,17 +73,18 @@ def find_wandb_run(api, run_name, entity, project):
 
 
 def map_wandb_state_to_db_status(wandb_state):
-    """Map W&B run state to database status."""
-    mapping = {
-        'running': 'running',
-        'finished': 'completed',
-        'failed': 'failed',
-        'crashed': 'crashed',
-        'killed': 'crashed',
-        'preempted': 'crashed'
-    }
+    """
+    Map W&B run state to database status.
 
-    return mapping.get(wandb_state, wandb_state)
+    Simple binary model: either 'running' or 'not_running'.
+    For experiments of indeterminate time that are manually stopped when
+    asymptotes are reached, 'crashed/failed/finished' distinctions are meaningless.
+    """
+    if wandb_state == 'running':
+        return 'running'
+    else:
+        # Everything else (finished, failed, crashed, killed, preempted) is just 'not_running'
+        return 'not_running'
 
 
 def extract_wandb_data(run):
@@ -99,10 +100,14 @@ def extract_wandb_data(run):
 
     # Parse timestamps if available
     if hasattr(run, 'created_at') and run.created_at:
-        data['started_at'] = run.created_at.isoformat() + 'Z'
+        # W&B API returns ISO string already
+        if isinstance(run.created_at, str):
+            data['started_at'] = run.created_at
+        else:
+            data['started_at'] = run.created_at.isoformat() + 'Z'
 
-    # For finished/failed/crashed runs, use current time as ended_at
-    if run.state in ['finished', 'failed', 'crashed', 'killed']:
+    # For non-running runs, use current time as ended_at
+    if run.state != 'running':
         data['ended_at'] = datetime.utcnow().isoformat() + 'Z'
 
     # Extract final metrics
@@ -135,20 +140,20 @@ def update_run(run_id, wandb_data, dry_run=False, verbose=False):
         print(f"  Updated {run_id}: {status}, {wandb_data.get('duration_seconds')}s")
 
 
-def mark_stale_launched_as_failed(run_id, created_at, dry_run=False):
-    """Mark old 'launched' runs as 'failed' if not found in W&B."""
+def mark_stale_launched_as_not_running(run_id, created_at, dry_run=False):
+    """Mark old 'launched' runs as 'not_running' if not found in W&B."""
     # Parse created_at
     created_dt = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
     age_hours = (datetime.now(created_dt.tzinfo) - created_dt).total_seconds() / 3600
 
-    # If run is >2 hours old and still "launched", it likely failed to start
+    # If run is >2 hours old and still "launched", it never started
     if age_hours > 2:
         if dry_run:
-            print(f"  [DRY RUN] Would mark as 'failed' (launched {age_hours:.1f}h ago, never started)")
+            print(f"  [DRY RUN] Would mark as 'not_running' (launched {age_hours:.1f}h ago, never started)")
             return True
         else:
-            update_run_status(run_id, 'failed')
-            print(f"  Marked as 'failed' (launched {age_hours:.1f}h ago, never started in W&B)")
+            update_run_status(run_id, 'not_running')
+            print(f"  Marked as 'not_running' (launched {age_hours:.1f}h ago, never started in W&B)")
             return True
 
     return False
@@ -210,9 +215,9 @@ def main():
                     print(f"  W&B run not found for name: {run_name}")
                     not_found_count += 1
 
-                    # Mark stale "launched" runs as failed
+                    # Mark stale "launched" runs as not_running
                     if not args.no_mark_stale:
-                        if mark_stale_launched_as_failed(run_id, created_at, dry_run=args.dry_run):
+                        if mark_stale_launched_as_not_running(run_id, created_at, dry_run=args.dry_run):
                             marked_failed_count += 1
 
                     continue

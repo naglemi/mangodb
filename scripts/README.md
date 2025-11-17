@@ -6,12 +6,15 @@ Automatically syncs training_runs database with W&B run status.
 
 ### Purpose
 
-When training runs are launched, they're added to the database with `status='launched'` and a synthetic `run_name`. When training starts, the training script (main.py) updates the database with the actual W&B run name, run ID, and URL. However, the database doesn't automatically update when:
-- Runs complete (should be `status='completed'`)
-- Runs fail (should be `status='failed'` or `status='crashed'`)
-- Runs never start (should be marked `status='failed'` after >2 hours)
+When training runs are launched, they're added to the database with `status='launched'` and a synthetic `run_name`. When training starts, the training script (main.py) updates the database with the actual W&B run name, run ID, URL, and `status='running'`.
 
-This script queries the database for stale runs, fetches their actual status from W&B, and updates the database.
+This script syncs the database with W&B to update run status:
+- `status='running'` - Run is currently executing in W&B
+- `status='not_running'` - Run has stopped (finished, crashed, killed, etc.)
+
+For experiments of indeterminate time that are manually stopped when asymptotes are reached, the distinction between "finished/crashed/failed" is meaningless. The binary model (running/not_running) is sufficient.
+
+The script also marks stale runs (launched >2 hours ago but not found in W&B) as `status='not_running'`.
 
 ### Usage
 
@@ -50,18 +53,20 @@ crontab -e
 2. **Searches W&B** for matching runs (by wandb_run_id or run_name)
 3. **Extracts W&B data**: state, timestamps, runtime, final metrics
 4. **Updates database** with: wandb_run_id, wandb_url, status, duration_seconds, started_at, ended_at, final_metrics_json
-5. **Marks stale runs** as failed: If run is >2 hours old and not found in W&B, marks as `status='failed'`
+5. **Marks stale runs**: If run is >2 hours old and not found in W&B, marks as `status='not_running'`
 
 ### W&B State Mapping
 
 | W&B State | Database Status |
 |-----------|-----------------|
 | running   | running         |
-| finished  | completed       |
-| failed    | failed          |
-| crashed   | crashed         |
-| killed    | crashed         |
-| preempted | crashed         |
+| finished  | not_running     |
+| failed    | not_running     |
+| crashed   | not_running     |
+| killed    | not_running     |
+| preempted | not_running     |
+
+**Rationale**: For research experiments that are manually stopped when results plateau, the distinction between "finished successfully" vs "crashed" vs "killed" is meaningless. What matters is: is it currently running or not?
 
 ### Requirements
 

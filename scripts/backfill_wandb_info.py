@@ -105,15 +105,10 @@ def main():
                 print(f"    W&B URL: {wandb_run.url}")
                 
                 # Map W&B state to database status
-                status_mapping = {
-                    'running': 'running',
-                    'finished': 'completed',
-                    'failed': 'failed',
-                    'crashed': 'crashed',
-                    'killed': 'crashed',
-                    'preempted': 'crashed'
-                }
-                new_status = status_mapping.get(wandb_run.state, wandb_run.state)
+                # Simple binary model: either 'running' or 'not_running'
+                # For experiments of indeterminate time that are manually stopped,
+                # crashed/failed/finished distinctions are meaningless
+                new_status = 'running' if wandb_run.state == 'running' else 'not_running'
                 
                 # Update database
                 update_run_status(
