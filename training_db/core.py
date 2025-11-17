@@ -132,7 +132,7 @@ def update_run_status(
         run_id: Run identifier
         status: New status ('running', 'completed', 'failed', 'crashed')
         **kwargs: Optional fields to update (duration_seconds, final_metrics_json,
-                  ended_at, started_at, wandb_run_id, wandb_url, run_name)
+                  ended_at, started_at, wandb_run_id, wandb_url, run_name, history_json)
     """
     with get_connection() as conn:
         set_clauses = ['status = ?']
@@ -146,6 +146,10 @@ def update_run_status(
         if 'final_metrics_json' in kwargs:
             set_clauses.append('final_metrics_json = ?')
             params.append(json.dumps(kwargs['final_metrics_json']))
+
+        if 'history_json' in kwargs:
+            set_clauses.append('history_json = ?')
+            params.append(json.dumps(kwargs['history_json']))
 
         if 'ended_at' in kwargs:
             set_clauses.append('ended_at = ?')
