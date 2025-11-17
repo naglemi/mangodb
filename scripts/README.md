@@ -6,8 +6,7 @@ Automatically syncs training_runs database with W&B run status.
 
 ### Purpose
 
-When training runs are launched, they're added to the database with `status='launched'`. However, the database doesn't automatically update when:
-- Runs start training (should be `status='running'`)
+When training runs are launched, they're added to the database with `status='launched'` and a synthetic `run_name`. When training starts, the training script (main.py) updates the database with the actual W&B run name, run ID, and URL. However, the database doesn't automatically update when:
 - Runs complete (should be `status='completed'`)
 - Runs fail (should be `status='failed'` or `status='crashed'`)
 - Runs never start (should be marked `status='failed'` after >2 hours)
