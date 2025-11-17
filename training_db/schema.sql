@@ -21,8 +21,8 @@ CREATE TABLE IF NOT EXISTS training_runs (
   started_at TEXT,
   ended_at TEXT,
 
-  -- Status
-  status TEXT DEFAULT 'launched',
+  -- Status (binary: running or not_running)
+  status TEXT DEFAULT 'running',
   duration_seconds INTEGER,
 
   -- Key hyperparameters (most-queried fields)

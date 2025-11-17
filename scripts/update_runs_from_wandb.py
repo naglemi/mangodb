@@ -37,7 +37,6 @@ def query_stale_runs(limit=None):
     Returns runs that either:
     1. Are currently running (need latest data)
     2. Don't have history yet (need backfill)
-    3. Have status='launched' (need initial sync)
     """
     with get_connection() as conn:
         cursor = conn.cursor()
@@ -46,8 +45,7 @@ def query_stale_runs(limit=None):
             SELECT run_id, run_name, wandb_run_id, status, created_at
             FROM training_runs
             WHERE
-                status = 'running'  -- Always update running runs
-                OR status = 'launched'  -- Need initial sync
+                status = 'running'  -- Update running runs
                 OR (status = 'not_running' AND history_json IS NULL)  -- Need backfill
             ORDER BY created_at DESC
         """
@@ -176,20 +174,20 @@ def update_run(run_id, wandb_data, dry_run=False, verbose=False):
         print(f"  Updated {run_id}: {status}, {wandb_data.get('duration_seconds')}s")
 
 
-def mark_stale_launched_as_not_running(run_id, created_at, dry_run=False):
-    """Mark old 'launched' runs as 'not_running' if not found in W&B."""
+def mark_stale_running_as_not_running(run_id, created_at, dry_run=False):
+    """Mark old 'running' runs as 'not_running' if not found in W&B."""
     # Parse created_at
     created_dt = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
     age_hours = (datetime.now(created_dt.tzinfo) - created_dt).total_seconds() / 3600
 
-    # If run is >2 hours old and still "launched", it never started
+    # If run is >2 hours old and not in W&B, it never actually started or crashed immediately
     if age_hours > 2:
         if dry_run:
-            print(f"  [DRY RUN] Would mark as 'not_running' (launched {age_hours:.1f}h ago, never started)")
+            print(f"  [DRY RUN] Would mark as 'not_running' (created {age_hours:.1f}h ago, never started)")
             return True
         else:
             update_run_status(run_id, 'not_running')
-            print(f"  Marked as 'not_running' (launched {age_hours:.1f}h ago, never started in W&B)")
+            print(f"  Marked as 'not_running' (created {age_hours:.1f}h ago, never started in W&B)")
             return True
 
     return False
@@ -251,9 +249,9 @@ def main():
                     print(f"  W&B run not found for name: {run_name}")
                     not_found_count += 1
 
-                    # Mark stale "launched" runs as not_running
+                    # Mark stale "running" runs as not_running
                     if not args.no_mark_stale:
-                        if mark_stale_launched_as_not_running(run_id, created_at, dry_run=args.dry_run):
+                        if mark_stale_running_as_not_running(run_id, created_at, dry_run=args.dry_run):
                             marked_failed_count += 1
 
                     continue

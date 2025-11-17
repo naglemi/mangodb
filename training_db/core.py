@@ -79,7 +79,7 @@ def insert_run(
             ) VALUES (
                 ?, ?, ?, ?,
                 ?, ?, ?,
-                ?, 'launched', ?,
+                ?, ?, ?,
                 ?, ?, ?, ?,
                 ?, ?, ?,
                 ?, ?, ?,
@@ -95,6 +95,7 @@ def insert_run(
             kwargs.get('instance_id'),
             chain_of_custody_id,
             datetime.utcnow().isoformat() + 'Z',
+            kwargs.get('status', 'running'),  # Default to 'running' if not specified
             json.dumps(config_dict),
             # Original 7 fields
             training.get('batch_size'),
