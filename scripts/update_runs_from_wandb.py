@@ -119,31 +119,31 @@ def extract_wandb_data(run):
         if final_metrics:
             data['final_metrics_json'] = final_metrics
 
-    # Extract full history (time-series metrics) for non-running runs
-    # Only fetch history when run is done to avoid partial data
-    if run.state != 'running':
-        try:
-            # Fetch all history (scan_history() streams, doesn't load all at once)
-            history = list(run.scan_history())
+    # Extract full history (time-series metrics)
+    # Fetch for ALL runs (running or not) - training data is always valid and valuable
+    # Runs are manually killed when asymptotes are reached, so there's no "completion" signal
+    try:
+        # Fetch all history (scan_history() streams, doesn't load all at once)
+        history = list(run.scan_history())
 
-            # Convert to dictionary keyed by metric name
-            # Format: {'objective_COMT': [0.45, 0.47, ...], 'loss': [1.2, 1.1, ...], '_step': [0, 1, 2, ...]}
-            if history:
-                history_dict = {}
+        # Convert to dictionary keyed by metric name
+        # Format: {'objective_COMT': [0.45, 0.47, ...], 'loss': [1.2, 1.1, ...], '_step': [0, 1, 2, ...]}
+        if history:
+            history_dict = {}
 
-                # Extract all keys from first step
-                all_keys = set()
-                for step in history:
-                    all_keys.update(step.keys())
+            # Extract all keys from first step
+            all_keys = set()
+            for step in history:
+                all_keys.update(step.keys())
 
-                # Build time-series for each metric
-                for key in all_keys:
-                    history_dict[key] = [step.get(key) for step in history]
+            # Build time-series for each metric
+            for key in all_keys:
+                history_dict[key] = [step.get(key) for step in history]
 
-                data['history_json'] = history_dict
-                print(f"  Fetched {len(history)} steps × {len(all_keys)} metrics")
-        except Exception as e:
-            print(f"  Warning: Could not fetch history: {e}")
+            data['history_json'] = history_dict
+            print(f"  Fetched {len(history)} steps × {len(all_keys)} metrics")
+    except Exception as e:
+        print(f"  Warning: Could not fetch history: {e}")
 
     return data
 
