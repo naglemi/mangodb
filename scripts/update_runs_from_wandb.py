@@ -31,14 +31,14 @@ import wandb
 
 
 def query_stale_runs(limit=None):
-    """Query runs that need status updates."""
+    """Query runs that need status/history updates."""
     with get_connection() as conn:
         cursor = conn.cursor()
 
         query = """
             SELECT run_id, run_name, wandb_run_id, status, created_at
             FROM training_runs
-            WHERE status IN ('launched', 'running')
+            WHERE status IN ('launched', 'running', 'not_running')
             ORDER BY created_at DESC
         """
 
