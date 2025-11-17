@@ -31,14 +31,24 @@ import wandb
 
 
 def query_stale_runs(limit=None):
-    """Query runs that need status/history updates."""
+    """
+    Query runs that need status/history updates.
+
+    Returns runs that either:
+    1. Are currently running (need latest data)
+    2. Don't have history yet (need backfill)
+    3. Have status='launched' (need initial sync)
+    """
     with get_connection() as conn:
         cursor = conn.cursor()
 
         query = """
             SELECT run_id, run_name, wandb_run_id, status, created_at
             FROM training_runs
-            WHERE status IN ('launched', 'running', 'not_running')
+            WHERE
+                status = 'running'  -- Always update running runs
+                OR status = 'launched'  -- Need initial sync
+                OR (status = 'not_running' AND history_json IS NULL)  -- Need backfill
             ORDER BY created_at DESC
         """
 
