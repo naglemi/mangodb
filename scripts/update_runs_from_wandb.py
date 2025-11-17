@@ -221,13 +221,13 @@ def main():
     marked_failed_count = 0
     error_count = 0
 
-    for db_run in stale_runs:
+    for idx, db_run in enumerate(stale_runs, 1):
         run_id = db_run['run_id']
         run_name = db_run['run_name']
         wandb_run_id = db_run['wandb_run_id']
         created_at = db_run['created_at']
 
-        print(f"\nProcessing {run_id} (name: {run_name})")
+        print(f"\n[{idx}/{len(stale_runs)}] Processing {run_id} (name: {run_name})")
 
         try:
             # Get W&B run
