@@ -5,14 +5,11 @@ Syncs training run data from W&B to the local database.
 Populates objectives, metrics, and run metadata.
 """
 
-import sys
+import os
 import yaml
+import wandb
 from pathlib import Path
 from typing import Dict, List, Optional
-
-# Add W&B API to path
-sys.path.insert(0, str(Path.home() / "mango" / "apis"))
-from our_wandb import get_run_by_id
 
 from .objectives import insert_objective, update_objective_metric
 
@@ -100,14 +97,19 @@ def sync_run_metrics_from_wandb(run_id: str, wandb_run_id: str) -> int:
         Number of metrics updated
     """
     try:
-        # Get run data with metrics
-        run_data = get_run_by_id(wandb_run_id, include_metrics=True)
+        # Get run data with metrics directly from W&B API
+        entity = os.environ.get('WANDB_ENTITY', 'michael-nagle-lieber-institute-for-brain-development-joh')
+        project = os.environ.get('WANDB_PROJECT', 'cluster-pareto-grpo-safe')
 
-        if not run_data or 'metrics' not in run_data:
+        api = wandb.Api()
+        run = api.run(f"{entity}/{project}/{wandb_run_id}")
+
+        # Get metrics history
+        history = run.history(samples=10000)
+        if history.empty:
             return 0
 
-        metrics = run_data['metrics']
-
+        metrics = history.to_dict('records')
         if not metrics or len(metrics) == 0:
             return 0
 
@@ -224,21 +226,28 @@ def get_objectives_display_data(run_id: str, config_path: Optional[str] = None,
         # Try to get values from W&B
         if wandb_run_id:
             try:
-                run_data = get_run_by_id(wandb_run_id, include_metrics=True)
+                entity = os.environ.get('WANDB_ENTITY', 'michael-nagle-lieber-institute-for-brain-development-joh')
+                project = os.environ.get('WANDB_PROJECT', 'cluster-pareto-grpo-safe')
 
-                if run_data and 'metrics' in run_data and len(run_data['metrics']) > 0:
-                    final_record = run_data['metrics'][-1]
+                api = wandb.Api()
+                run = api.run(f"{entity}/{project}/{wandb_run_id}")
 
-                    # Match W&B metrics to config objectives
-                    for obj in config_objs:
-                        obj_name = obj['name']
+                history = run.history(samples=10000)
+                if not history.empty:
+                    metrics = history.to_dict('records')
+                    if metrics and len(metrics) > 0:
+                        final_record = metrics[-1]
 
-                        # Try to find matching metric in W&B data
-                        for key, value in final_record.items():
-                            if key.startswith('objectives/') and obj_name in key and '/raw_mean' in key:
-                                if value is not None and str(value) != 'nan':
-                                    obj['raw_mean'] = float(value)
-                                    break
+                        # Match W&B metrics to config objectives
+                        for obj in config_objs:
+                            obj_name = obj['name']
+
+                            # Try to find matching metric in W&B data
+                            for key, value in final_record.items():
+                                if key.startswith('objectives/') and obj_name in key and '/raw_mean' in key:
+                                    if value is not None and str(value) != 'nan':
+                                        obj['raw_mean'] = float(value)
+                                        break
             except:
                 pass
 
