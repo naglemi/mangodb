@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Any
 
 # Database path (can be overridden via environment variable)
-DB_PATH = os.environ.get('TRAINING_DB_PATH', '/home/ubuntu/mango/data/training_runs.db')
+DB_PATH = os.environ.get('TRAINING_DB_PATH', os.path.expanduser('~/mango/data/training_runs.db'))
 
 # Ensure data directory exists
 Path(DB_PATH).parent.mkdir(parents=True, exist_ok=True)
