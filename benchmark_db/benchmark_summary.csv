@@ -1,0 +1,21 @@
+benchmark_name,category,scoring_type,aggregation_method,num_objectives,objectives_list
+"Deco Hop",hop,"top-1,top-10,top-100",arithmetic,4,"SMARTS(s2, true) | SMARTS(s3, false) | SMARTS(s4, false) | sim(s5, PHCO)"
+"Scaffold Hop",hop,"top-1,top-10,top-100",arithmetic,3,"SMARTS(s2, false) | SMARTS(s6, true) | sim(s5, PHCO)"
+C11H24,isomer,top-159,,1,isomer(C11H24)
+C9H10N2O2PF2Cl,isomer,top-250,,1,isomer(C9H10N2O2PF2Cl)
+"Median molecules 1",median,"top-1,top-10,top-100",geometric,2,"sim(camphor, ECFP4) | sim(menthol, ECFP4)"
+"Median molecules 2",median,"top-1,top-10,top-100",geometric,2,"sim(tadalafil, ECFP6) | sim(sildenafil, ECFP6)"
+"Amlodipine MPO",mpo,"top-1,top-10,top-100",geometric,2,"sim(amlodipine, ECFP4) | number rings"
+"Fexofenadine MPO",mpo,"top-1,top-10,top-100",geometric,3,"sim(fexofenadine, AP) | TPSA | logP"
+"Osimertinib MPO",mpo,"top-1,top-10,top-100",geometric,4,"sim(osimertinib, FCFP4) | sim(osimertinib, ECFP6) | TPSA | logP"
+"Perindopril MPO",mpo,"top-1,top-10,top-100",geometric,2,"sim(perindopril, ECFP4) | number aromatic rings"
+"Ranolazine MPO",mpo,"top-1,top-10,top-100",geometric,4,"sim(ranolazine, AP) | logP | TPSA | number of fluorine atoms"
+"Sitagliptin MPO",mpo,"top-1,top-10,top-100",geometric,4,"sim(sitagliptin, ECFP4) | logP | TPSA | isomer(C16H15F6N5O)"
+"Zaleplon MPO",mpo,"top-1,top-10,top-100",geometric,2,"sim(zaleplon, ECFP4) | isomer(C19H17N3O2)"
+"Celecoxib rediscovery",rediscovery,top-1,,1,"sim(celecoxib, ECFP4)"
+"Thiothixene rediscovery",rediscovery,top-1,,1,"sim(thiothixene, ECFP4)"
+"Troglitazone rediscovery",rediscovery,top-1,,1,"sim(troglitazone, ECFP4)"
+"Albuterol similarity",similarity,"top-1,top-10,top-100",,1,"sim(albuterol, FCFP4)"
+"Aripiprazole similarity",similarity,"top-1,top-10,top-100",,1,"sim(aripiprazole, ECFP4)"
+"Mestranol similarity",similarity,"top-1,top-10,top-100",,1,"sim(mestranol, AP)"
+"Valsartan SMARTS",smarts,"top-1,top-10,top-100",geometric,4,"SMARTS(s1, true) | logP | TPSA | Bertz"

@@ -1,0 +1,21 @@
+benchmark_name,category,best_dataset,smiles_lstm,smiles_ga,graph_ga,graph_mcts
+"Deco Hop",hop,0.933,0.996,0.97,1.0,0.59
+"Scaffold Hop",hop,0.738,0.998,0.885,1.0,0.478
+C11H24,isomer,0.684,0.993,0.829,0.971,0.41
+C9H10N2O2PF2Cl,isomer,0.747,0.879,0.889,0.982,0.631
+"Median molecules 1",median,0.334,0.438,0.334,0.406,0.225
+"Median molecules 2",median,0.351,0.422,0.38,0.432,0.17
+"Amlodipine MPO",mpo,0.696,0.894,0.722,0.894,0.533
+"Fexofenadine MPO",mpo,0.817,0.959,0.931,0.998,0.695
+"Osimertinib MPO",mpo,0.839,0.907,0.886,0.953,0.784
+"Perindopril MPO",mpo,0.575,0.808,0.661,0.792,0.385
+"Ranolazine MPO",mpo,0.792,0.855,0.881,0.92,0.616
+"Sitagliptin MPO",mpo,0.509,0.545,0.689,0.891,0.458
+"Zaleplon MPO",mpo,0.547,0.669,0.413,0.754,0.488
+"Celecoxib rediscovery",rediscovery,0.505,1.0,0.732,1.0,0.355
+"Thiothixene rediscovery",rediscovery,0.456,1.0,0.598,1.0,0.311
+"Troglitazone rediscovery",rediscovery,0.419,1.0,0.515,1.0,0.311
+"Albuterol similarity",similarity,0.719,1.0,0.907,1.0,0.749
+"Aripiprazole similarity",similarity,0.595,1.0,0.834,1.0,0.38
+"Mestranol similarity",similarity,0.629,1.0,0.79,1.0,0.402
+"Valsartan SMARTS",smarts,0.259,0.978,0.552,0.99,0.04
